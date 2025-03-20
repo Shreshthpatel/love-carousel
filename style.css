@@ -93,7 +93,8 @@ main {
   }
   &:hover {
     background-color: rgba(0,0,0,0.3);
-    transition: background 0.4s ease, transform 0.4s ease;  /* Add 's' for seconds */
+    transition: background 0.4s ease, transform 0.4s ease;
+    transform: scale(1.05);
 }
 
 }
@@ -168,5 +169,9 @@ main {
     &:nth-child(4) { left: calc(50% + 140px); }
     &:nth-child(5) { left: calc(50% + 280px); }
     &:nth-child(6) { left: calc(50% + 420px); opacity: 0; }
+    &:hover {
+    background-color: rgba(0,0,0,0.3);
+    transition: background 0.4s ease, transform 0.4s ease;
+    transform: scale(1.05);
   }
 }
