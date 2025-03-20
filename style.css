@@ -64,7 +64,8 @@ main {
   text-shadow: 0 3px 8px rgba(0,0,0,0.5);
   opacity: 0;
   display: none;
-
+  transition: background 0.4s ease, transform 0.4s ease; 
+  
   & .title {
     font-family: 'arial-black';
     text-transform: uppercase;
@@ -87,7 +88,7 @@ main {
     
   }
   &:hover {
-    background-color: rgba(0,0,0,0.6); 
+    background-color: rgba(0,0,0,0.5); 
     transition: background 0.4s ease, transform 0.4s ease;  
 }
 
