@@ -85,6 +85,11 @@ main {
     padding: 0.75rem;
     cursor: pointer;
   }
+  &:hover {
+    background-color: rgba(255,255,255,0.3);
+    transition: background 0.4s ease, transform 0.4s ease;  /* Add 's' for seconds */
+}
+
 }
 
 .item:nth-of-type(2) .content {
