@@ -3,28 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <title>Love Carasoule</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
   <link rel="stylesheet" href="./style.css">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <style>
-     footer {
+    body { margin: 0; font-family: sans-serif; }
+    .audio-widget {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 7%;
-      background: rgba(0, 0, 0, 0.5);
-      color: white;
+      bottom: 50px;
+      left: 10px;
+      width: 300px;
+      background: #000000c2;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: height 0.4s ease, width 0.4s ease;
+      z-index: 9999;
+    }
+    .collapsed {
+      height: 70px;
+    }
+    .expanded {
+      height: 180px;
+    }
+    .audio-header {
+      display: flex;
+      color: #fcfcfc;
+      align-items: center;
+      padding: 10px;
+    }
+    .cover {
+      width: 50px;
+      height: 50px;
+      background-size: cover;
+      background-position: center;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+    .song-info {
+      flex: 1;
+      color: #fcfcfc;
+      margin-left: 10px;
+    }
+    .song-name {
+      font-weight: bold;
+      color: #fcfcfc;
       font-size: 14px;
-      text-align: center;
-      line-height: 10vh;
-      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-      z-index: 5;
+    }
+    .duration {
+      font-size: 12px;
+      color: #fcfcfc;
+    }
+    .play-btn, .toggle-arrow, .next-btn, .prev-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      color: #fcfcfc;
+      margin-left: 8px;
+    }
+    .audio-controls {
+      padding: 10px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .expanded .audio-controls {
+      display: flex;
+    }
+    .progress, .volume {
+      width: 100%;
+    }
+    .nav-buttons {
+      display: flex;
+      color: #fcfcfc;
+      justify-content: space-between;
     }
   </style>
 
-
 </head>
 <body>
+        
 <!-- partial:index.partial.html -->
 <main>
   <ul class='slider'>
@@ -76,10 +136,155 @@
 
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-<!-- partial -->
-  <script  src="./script.js"></script>
-<!-- partial -->
-  <script  src="./script.js"></script>
+<div class="audio-widget collapsed" id="audioWidget">
+  <div class="audio-header">
+    <div class="cover" id="cover"></div>
+    <div class="song-info">
+      <div class="song-name" id="songName">Sample Song</div>
+      <div class="duration" id="duration">00:00</div>
+    </div>
+    <button class="play-btn"  id="playBtn">▶</button>
+    <button class="toggle-arrow" id="toggleArrow">⬆️</button>
+  </div>
+  <div class="audio-controls">
+    <input type="range" id="progress" class="progress" value="0" max="100">
+    <input type="range" id="volume" class="volume" min="0" max="1" step="0.01">
+    <div class="nav-buttons">
+      <button class="prev-btn" id="prevBtn">⏮</button>
+      <button class="next-btn" id="nextBtn">⏭</button>
+    </div>
+  </div>
+  <audio id="audio"></audio>
+</div>
+<script>
+  const audioWidget = document.getElementById('audioWidget');
+  const playBtn = document.getElementById('playBtn');
+  const toggleArrow = document.getElementById('toggleArrow');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const audio = document.getElementById('audio');
+  const progress = document.getElementById('progress');
+  const volume = document.getElementById('volume');
+  const durationDisplay = document.getElementById('duration');
+  const songName = document.getElementById('songName');
+  const cover = document.getElementById('cover');
+
+  let interactionTimeout;
+
+  const playlist = [
+    { name: "Ishq Hai | Mismatched Season 3", file: "song1.mp3", cover: "cover1.jpg" },
+    { name: "O Rangrez | Bhag Milka Bhag", file: "song2.mp3", cover: "cover2.jpg" },
+    { name: "Dekha ek khwaab | Silsila", file: "song3.mp3", cover: "cover3.jpg" }
+  ];
+  let currentTrack = 0;
+
+  function loadTrack(index) {
+    const track = playlist[index];
+    audio.src = track.file;
+    songName.textContent = track.name;
+    cover.style.backgroundImage = `url('${track.cover}')`;
+    audio.load();
+    playBtn.textContent = '▶';
+  }
+
+  function playTrack() {
+    audio.play();
+    playBtn.textContent = '⏸';
+  }
+
+  playBtn.onclick = () => {
+    if (audio.paused) {
+      playTrack();
+    } else {
+      audio.pause();
+      playBtn.textContent = '▶';
+    }
+  };
+
+  audio.ontimeupdate = () => {
+    if (audio.duration) {
+      progress.value = (audio.currentTime / audio.duration) * 100;
+      const minutes = Math.floor(audio.currentTime / 60);
+      const seconds = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
+      durationDisplay.textContent = `${minutes}:${seconds}`;
+    }
+  };
+
+  progress.oninput = () => {
+    audio.currentTime = (progress.value / 100) * audio.duration;
+    resetAutoCollapse();
+  };
+
+  volume.oninput = () => {
+    audio.volume = volume.value;
+    resetAutoCollapse();
+  };
+
+  toggleArrow.onclick = () => {
+    if (audioWidget.classList.contains('collapsed')) {
+      expandWidget();
+    } else {
+      collapseWidget();
+    }
+  };
+
+  prevBtn.onclick = () => {
+    currentTrack = (currentTrack - 1 + playlist.length) % playlist.length;
+    loadTrack(currentTrack);
+    playTrack();
+    resetAutoCollapse();
+  };
+
+  nextBtn.onclick = () => {
+    currentTrack = (currentTrack + 1) % playlist.length;
+    loadTrack(currentTrack);
+    playTrack();
+    resetAutoCollapse();
+  };
+
+  function expandWidget() {
+    audioWidget.classList.remove('collapsed');
+    audioWidget.classList.add('expanded');
+    resetAutoCollapse();
+  }
+
+  function collapseWidget() {
+    audioWidget.classList.add('collapsed');
+    audioWidget.classList.remove('expanded');
+    clearTimeout(interactionTimeout);
+  }
+
+  function resetAutoCollapse() {
+    clearTimeout(interactionTimeout);
+    interactionTimeout = setTimeout(() => {
+      collapseWidget();
+    }, 5000);
+  }
+
+  ['mousemove', 'click', 'touchstart'].forEach(event => {
+    audioWidget.addEventListener(event, () => {
+      if (audioWidget.classList.contains('expanded')) {
+        resetAutoCollapse();
+      }
+    });
+  });
+
+  volume.value = 0.5;
+  audio.volume = 0.5;
+  loadTrack(currentTrack);
+  audio.addEventListener('ended', () => {
+currentTrack = (currentTrack + 1) % playlist.length;
+loadTrack(currentTrack);
+playTrack();
+});
+
+</script>
+
+    
+<script src="script.js"></script>
+<script src="script.js"></script>
+
+    
 
   <footer>  <p>Made by <strong>Shreshth Patel</strong> © All rights reserved.</p></footer>
 </body>
