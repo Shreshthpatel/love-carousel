@@ -8,6 +8,25 @@
   <link rel="stylesheet" href="./style.css">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <style>
+    
+ footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 5%;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      font-size: 12px;
+      text-align: center;
+      line-height: 6vh;
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+      z-index: 5;
+      transition: background 0.4s ease, transform 0.2s ease;  
+   &:hover {
+      background: rgba(0,0,0,0.7);
+      transition: background 0.4s ease, transform 0.2s ease;  
+}
     body { margin: 0; font-family: sans-serif; }
     .audio-widget {
       position: fixed;
